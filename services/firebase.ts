@@ -1,8 +1,6 @@
-// FIX: Fix firebase auth imports by using the compat library, as the project is set up to use v9 modular for firestore but seems to be using compat for auth.
-import { initializeApp, FirebaseApp } from 'firebase/app';
-import { getFirestore, Firestore } from 'firebase/firestore';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/auth';
+import firebase from 'firebase/app';
+import 'firebase/auth';
+import 'firebase/firestore';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -14,13 +12,12 @@ const firebaseConfig = {
   appId: "1:386245536917:web:ad4a354c95ee8e6d063f9c"
 };
 
-
 // Initialize Firebase
-const app: FirebaseApp = initializeApp(firebaseConfig);
-// Also initialize the compat app
-firebase.initializeApp(firebaseConfig);
+// FIX: Use v8 initialization pattern, checking for existing apps to prevent errors during hot-reloading.
+const app: firebase.app.App = !firebase.apps.length ? firebase.initializeApp(firebaseConfig) : firebase.app();
 
-// Export Firebase services
+// Export Firebase services using the v8 namespaced pattern
 export const auth = firebase.auth();
-export const firestore: Firestore = getFirestore(app);
+export const firestore = firebase.firestore();
+
 export default app;

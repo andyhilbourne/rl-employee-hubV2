@@ -1,32 +1,29 @@
 import { User } from '../types';
 import { auth, firestore } from './firebase';
-import { doc, getDoc } from "firebase/firestore";
-// FIX: The project is using the Firebase v8 compat library for Auth.
-// The modular v9 imports were incorrect and have been replaced with an import for the 'firebase/compat/app' to access the User type.
-import firebase from 'firebase/compat/app';
+import firebase from 'firebase/app';
 
 export const authService = {
   login: async (email: string, passwordInput: string): Promise<User> => {
-    // FIX: Changed to v8 compat syntax: auth.signInWithEmailAndPassword
+    // FIX: Use v8 namespaced auth API
     const userCredential = await auth.signInWithEmailAndPassword(email, passwordInput);
     const firebaseUser = userCredential.user;
 
     if (firebaseUser) {
       // Fetch user profile from Firestore
-      const userDocRef = doc(firestore, "users", firebaseUser.uid);
-      const userDoc = await getDoc(userDocRef);
+      // FIX: Use v8 namespaced firestore API
+      const userDocRef = firestore.collection("users").doc(firebaseUser.uid);
+      const userDoc = await userDocRef.get();
 
-      if (userDoc.exists()) {
+      if (userDoc.exists) {
         const userData = userDoc.data() as Omit<User, 'id'>;
         if (userData.disabled) {
-          // FIX: Changed to v8 compat syntax: auth.signOut
+          // FIX: Use v8 namespaced auth API
           await auth.signOut();
           throw new Error("Your account has been disabled. Please contact an administrator.");
         }
         return { id: firebaseUser.uid, ...userData } as User;
       } else {
-        // This case should ideally not happen if user creation is handled correctly
-        // FIX: Changed to v8 compat syntax: auth.signOut
+        // FIX: Use v8 namespaced auth API
         await auth.signOut();
         throw new Error("User profile not found.");
       }
@@ -35,20 +32,21 @@ export const authService = {
   },
 
   logout: async (): Promise<void> => {
-    // FIX: Changed to v8 compat syntax: auth.signOut
+    // FIX: Use v8 namespaced auth API
     await auth.signOut();
   },
 
   onAuthStateChange: (callback: (user: User | null) => void) => {
-    // FIX: Changed to v8 compat syntax: auth.onAuthStateChanged
+    // FIX: Use v8 namespaced auth API and firebase.User type
     return auth.onAuthStateChanged(async (firebaseUser: firebase.User | null) => {
       if (firebaseUser) {
-        const userDocRef = doc(firestore, "users", firebaseUser.uid);
-        const userDoc = await getDoc(userDocRef);
-        if (userDoc.exists()) {
+        // FIX: Use v8 namespaced firestore API
+        const userDocRef = firestore.collection("users").doc(firebaseUser.uid);
+        const userDoc = await userDocRef.get();
+        if (userDoc.exists) {
             const userData = userDoc.data() as Omit<User, 'id'>;
             if (userData.disabled) {
-                // FIX: Changed to v8 compat syntax: auth.signOut
+                // FIX: Use v8 namespaced auth API
                 await auth.signOut();
                 callback(null);
             } else {
@@ -56,7 +54,7 @@ export const authService = {
             }
         } else {
           // User exists in Auth but not Firestore, log them out.
-          // FIX: Changed to v8 compat syntax: auth.signOut
+          // FIX: Use v8 namespaced auth API
           await auth.signOut();
           callback(null);
         }
