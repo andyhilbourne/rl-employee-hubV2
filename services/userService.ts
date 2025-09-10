@@ -1,7 +1,19 @@
 import { User } from '../types';
 import { auth, firestore } from './firebase';
-// FIX: Using Firebase compat auth, so modular auth imports are removed.
-import { collection, getDocs, doc, getDoc, setDoc, updateDoc, arrayUnion } from 'firebase/firestore';
+// FIX: Changed import path from 'firebase/auth' to '@firebase/auth' to fix module resolution errors.
+import { 
+  createUserWithEmailAndPassword, 
+  sendPasswordResetEmail 
+} from '@firebase/auth';
+import { 
+  collection, 
+  getDocs, 
+  doc, 
+  getDoc, 
+  setDoc, 
+  updateDoc, 
+  arrayUnion 
+} from 'firebase/firestore';
 
 const usersCollectionRef = collection(firestore, 'users');
 const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbya5gmaGfXD3Iy-ChHE9Ev67WuE8CAZROoCf6VhAuTn49RQMDZ2X3yANkvhRrC8YMjq/exec';
@@ -23,8 +35,7 @@ export const userService = {
   },
 
   createUser: async (userData: Omit<User, 'id'>, password: string): Promise<User> => {
-      // FIX: Use compat auth API
-      const userCredential = await auth.createUserWithEmailAndPassword(userData.email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, userData.email, password);
       const firebaseUser = userCredential.user;
 
       if (!firebaseUser) {
@@ -53,8 +64,7 @@ export const userService = {
   },
 
   sendPasswordResetEmail: async (email: string): Promise<void> => {
-    // FIX: Use compat auth API
-    await auth.sendPasswordResetEmail(email);
+    await sendPasswordResetEmail(auth, email);
   },
 
   toggleUserStatus: async (userId: string, isDisabled: boolean): Promise<void> => {
