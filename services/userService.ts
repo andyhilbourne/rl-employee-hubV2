@@ -1,10 +1,6 @@
 import { User } from '../types';
 import { auth, firestore } from './firebase';
-// FIX: The 'firebase/auth' module is not resolving correctly in this environment. Using the explicit browser entry point.
-import { 
-  createUserWithEmailAndPassword, 
-  sendPasswordResetEmail 
-} from 'firebase/auth-browser';
+// FIX: Removed modular imports from 'firebase/auth' and switched to v8 compatibilty API usage to resolve module export errors.
 import { 
   collection, 
   getDocs, 
@@ -35,7 +31,7 @@ export const userService = {
   },
 
   createUser: async (userData: Omit<User, 'id'>, password: string): Promise<User> => {
-      const userCredential = await createUserWithEmailAndPassword(auth, userData.email, password);
+      const userCredential = await auth.createUserWithEmailAndPassword(userData.email, password);
       const firebaseUser = userCredential.user;
 
       if (!firebaseUser) {
@@ -64,7 +60,7 @@ export const userService = {
   },
 
   sendPasswordResetEmail: async (email: string): Promise<void> => {
-    await sendPasswordResetEmail(auth, email);
+    await auth.sendPasswordResetEmail(email);
   },
 
   toggleUserStatus: async (userId: string, isDisabled: boolean): Promise<void> => {

@@ -1,7 +1,8 @@
 // services/firebase.ts
 import { initializeApp } from 'firebase/app';
-// FIX: The 'firebase/auth' module is not resolving correctly in this environment. Using the explicit browser entry point.
-import { getAuth } from 'firebase/auth-browser';
+// FIX: The modular import for getAuth was causing errors. Switched to the v8 compatibility library for authentication.
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
 import { getFirestore } from 'firebase/firestore';
 
 // Your web app's Firebase configuration
@@ -16,7 +17,8 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+firebase.initializeApp(firebaseConfig); // For compat auth
 
 // Export Firebase services
-export const auth = getAuth(app);
+export const auth = firebase.auth();
 export const firestore = getFirestore(app);
