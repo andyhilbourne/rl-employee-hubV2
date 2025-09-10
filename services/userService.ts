@@ -1,6 +1,12 @@
 import { User } from '../types';
 import { auth, firestore } from './firebase';
-// FIX: Removed modular imports from 'firebase/auth' and switched to v8 compatibilty API usage to resolve module export errors.
+// FIX: Removed imports from 'firebase/auth' as they were causing errors. Switched to compat API.
+/*
+import {
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+} from 'firebase/auth';
+*/
 import { 
   collection, 
   getDocs, 
@@ -31,6 +37,7 @@ export const userService = {
   },
 
   createUser: async (userData: Omit<User, 'id'>, password: string): Promise<User> => {
+      // FIX: Switched to compat API `auth.createUserWithEmailAndPassword`
       const userCredential = await auth.createUserWithEmailAndPassword(userData.email, password);
       const firebaseUser = userCredential.user;
 
@@ -60,6 +67,7 @@ export const userService = {
   },
 
   sendPasswordResetEmail: async (email: string): Promise<void> => {
+    // FIX: Switched to compat API `auth.sendPasswordResetEmail`
     await auth.sendPasswordResetEmail(email);
   },
 

@@ -1,6 +1,5 @@
 // services/firebase.ts
-import { initializeApp } from 'firebase/app';
-// FIX: The modular import for getAuth was causing errors. Switched to the v8 compatibility library for authentication.
+// FIX: Switched to Firebase compat library for auth to resolve import errors.
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import { getFirestore } from 'firebase/firestore';
@@ -16,9 +15,9 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-firebase.initializeApp(firebaseConfig); // For compat auth
+const app = firebase.initializeApp(firebaseConfig);
 
 // Export Firebase services
+// FIX: Use compat auth instance. Firestore remains modular.
 export const auth = firebase.auth();
 export const firestore = getFirestore(app);
