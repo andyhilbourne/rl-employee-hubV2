@@ -1,30 +1,27 @@
 import { User } from '../types';
 import { auth, firestore } from './firebase';
-import firebase from 'firebase/app';
+// FIX: Changed import path to `firebase/auth/browser` to resolve module export errors.
+import { signInWithEmailAndPassword, signOut, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth/browser';
+import { doc, getDoc } from 'firebase/firestore';
 
 export const authService = {
   login: async (email: string, passwordInput: string): Promise<User> => {
-    // FIX: Use v8 namespaced auth API
-    const userCredential = await auth.signInWithEmailAndPassword(email, passwordInput);
+    const userCredential = await signInWithEmailAndPassword(auth, email, passwordInput);
     const firebaseUser = userCredential.user;
 
     if (firebaseUser) {
-      // Fetch user profile from Firestore
-      // FIX: Use v8 namespaced firestore API
-      const userDocRef = firestore.collection("users").doc(firebaseUser.uid);
-      const userDoc = await userDocRef.get();
+      const userDocRef = doc(firestore, "users", firebaseUser.uid);
+      const userDoc = await getDoc(userDocRef);
 
-      if (userDoc.exists) {
+      if (userDoc.exists()) {
         const userData = userDoc.data() as Omit<User, 'id'>;
         if (userData.disabled) {
-          // FIX: Use v8 namespaced auth API
-          await auth.signOut();
+          await signOut(auth);
           throw new Error("Your account has been disabled. Please contact an administrator.");
         }
         return { id: firebaseUser.uid, ...userData } as User;
       } else {
-        // FIX: Use v8 namespaced auth API
-        await auth.signOut();
+        await signOut(auth);
         throw new Error("User profile not found.");
       }
     }
@@ -32,30 +29,25 @@ export const authService = {
   },
 
   logout: async (): Promise<void> => {
-    // FIX: Use v8 namespaced auth API
-    await auth.signOut();
+    await signOut(auth);
   },
 
   onAuthStateChange: (callback: (user: User | null) => void) => {
-    // FIX: Use v8 namespaced auth API and firebase.User type
-    return auth.onAuthStateChanged(async (firebaseUser: firebase.User | null) => {
+    return onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
-        // FIX: Use v8 namespaced firestore API
-        const userDocRef = firestore.collection("users").doc(firebaseUser.uid);
-        const userDoc = await userDocRef.get();
-        if (userDoc.exists) {
+        const userDocRef = doc(firestore, "users", firebaseUser.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
             const userData = userDoc.data() as Omit<User, 'id'>;
             if (userData.disabled) {
-                // FIX: Use v8 namespaced auth API
-                await auth.signOut();
+                await signOut(auth);
                 callback(null);
             } else {
                  callback({ id: firebaseUser.uid, ...userData } as User);
             }
         } else {
           // User exists in Auth but not Firestore, log them out.
-          // FIX: Use v8 namespaced auth API
-          await auth.signOut();
+          await signOut(auth);
           callback(null);
         }
       } else {

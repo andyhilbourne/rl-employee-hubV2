@@ -1,9 +1,10 @@
 import { Job, JobWithSiteInfo } from '../types';
 import { firestore } from './firebase';
 import { siteService } from './siteService';
+import { collection, query, where, orderBy, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 
-// FIX: Use v8 namespaced firestore API
-const jobsCollection = firestore.collection('jobs');
+
+const jobsCollection = collection(firestore, 'jobs');
 
 export const jobService = {
   getUpcomingJobsForUser: async (userId: string): Promise<JobWithSiteInfo[]> => {
@@ -13,13 +14,13 @@ export const jobService = {
     sevenDaysFromNow.setDate(today.getDate() + 7);
     sevenDaysFromNow.setHours(23, 59, 59, 999);
     
-    // FIX: Use v8 namespaced firestore API for querying
-    const q = jobsCollection
-        .where('assignedUserId', '==', userId)
-        .where('status', '!=', 'Completed')
-        .where('startDate', '<=', sevenDaysFromNow.toISOString().split('T')[0]);
+    const q = query(jobsCollection,
+        where('assignedUserId', '==', userId),
+        where('status', '!=', 'Completed'),
+        where('startDate', '<=', sevenDaysFromNow.toISOString().split('T')[0])
+    );
     
-    const querySnapshot = await q.get();
+    const querySnapshot = await getDocs(q);
     const jobs: Job[] = [];
     querySnapshot.forEach(doc => {
         const data = doc.data();
@@ -52,23 +53,20 @@ export const jobService = {
   },
   
   getJobsBySiteId: async (siteId: string): Promise<Job[]> => {
-    // FIX: Use v8 namespaced firestore API for querying
-    const q = jobsCollection.where('siteId', '==', siteId).orderBy('startDate', 'desc');
-    const querySnapshot = await q.get();
+    const q = query(jobsCollection, where('siteId', '==', siteId), orderBy('startDate', 'desc'));
+    const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Job));
   },
 
   getAllJobsForAdmin: async (): Promise<Job[]> => {
-    // FIX: Use v8 namespaced firestore API
-    const querySnapshot = await jobsCollection.get();
+    const querySnapshot = await getDocs(jobsCollection);
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Job));
   },
 
   getJobById: async (jobId: string): Promise<Job | undefined> => {
-    // FIX: Use v8 namespaced firestore API
-    const docRef = jobsCollection.doc(jobId);
-    const docSnap = await docRef.get();
-    if (docSnap.exists) {
+    const docRef = doc(firestore, 'jobs', jobId);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
       return { id: docSnap.id, ...docSnap.data() } as Job;
     }
     return undefined;
@@ -79,28 +77,24 @@ export const jobService = {
       ...jobData,
       status: 'Pending',
     };
-    // FIX: Use v8 namespaced firestore API
-    const docRef = await jobsCollection.add(newJobData);
+    const docRef = await addDoc(jobsCollection, newJobData);
     return { id: docRef.id, ...newJobData } as Job;
   },
 
   updateJob: async (jobId: string, jobUpdateData: Partial<Omit<Job, 'id' | 'status' | 'siteId'>>): Promise<Job | undefined> => {
-    // FIX: Use v8 namespaced firestore API
-    const docRef = jobsCollection.doc(jobId);
-    await docRef.update(jobUpdateData);
+    const docRef = doc(firestore, 'jobs', jobId);
+    await updateDoc(docRef, jobUpdateData);
     return await jobService.getJobById(jobId);
   },
   
   deleteJob: async (jobId: string): Promise<void> => {
-    // FIX: Use v8 namespaced firestore API
-    const docRef = jobsCollection.doc(jobId);
-    await docRef.delete();
+    const docRef = doc(firestore, 'jobs', jobId);
+    await deleteDoc(docRef);
   },
 
   updateJobStatus: async (jobId: string, status: Job['status']): Promise<Job | undefined> => {
-    // FIX: Use v8 namespaced firestore API
-    const docRef = jobsCollection.doc(jobId);
-    await docRef.update({ status });
+    const docRef = doc(firestore, 'jobs', jobId);
+    await updateDoc(docRef, { status });
     return await jobService.getJobById(jobId);
   }
 };

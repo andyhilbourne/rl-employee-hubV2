@@ -1,19 +1,33 @@
 import { TimeEntry } from '../types';
 import { firestore } from './firebase';
-import firebase from 'firebase/app'; // For Timestamp type
+import { 
+  collection, 
+  doc, 
+  setDoc, 
+  addDoc, 
+  deleteDoc, 
+  getDoc, 
+  query, 
+  where, 
+  orderBy, 
+  getDocs, 
+  updateDoc, 
+  Timestamp, 
+  DocumentSnapshot,
+  QueryConstraint
+} from 'firebase/firestore';
 
-// FIX: Use v8 namespaced firestore API
-const timeEntriesCollection = firestore.collection('timeEntries');
+
+const timeEntriesCollection = collection(firestore, 'timeEntries');
 
 // Helper to convert Firestore Timestamps to Dates in entries
-const mapEntry = (doc: firebase.firestore.DocumentSnapshot): TimeEntry => {
-    const data = doc.data()!;
-    // FIX: Reference v8 Timestamp type
-    const clockInTimestamp = data.clockInTime as firebase.firestore.Timestamp;
-    const clockOutTimestamp = data.clockOutTime as firebase.firestore.Timestamp;
+const mapEntry = (docSnap: DocumentSnapshot): TimeEntry => {
+    const data = docSnap.data()!;
+    const clockInTimestamp = data.clockInTime as Timestamp;
+    const clockOutTimestamp = data.clockOutTime as Timestamp;
 
     return {
-        id: doc.id,
+        id: docSnap.id,
         ...data,
         clockInTime: clockInTimestamp.toDate(),
         clockOutTime: data.clockOutTime ? clockOutTimestamp.toDate() : undefined,
@@ -33,9 +47,8 @@ export const timeService = {
     };
 
     // Store this as the "current" clock-in record for this user
-    // FIX: Use v8 namespaced firestore API
-    const currentClockInRef = firestore.collection(`users/${userId}/currentClockIn`).doc('entry');
-    await currentClockInRef.set(newEntry);
+    const currentClockInRef = doc(firestore, `users/${userId}/currentClockIn`, 'entry');
+    await setDoc(currentClockInRef, newEntry);
 
     // The document ID will be generated when clocking out and saving to the main collection.
     // For now, we return a temporary object.
@@ -55,13 +68,11 @@ export const timeService = {
     };
 
     // Add the completed entry to the main timesheet collection
-    // FIX: Use v8 namespaced firestore API
-    const docRef = await timeEntriesCollection.add(finalEntryData);
+    const docRef = await addDoc(timeEntriesCollection, finalEntryData);
 
     // Clear the current clock-in record
-    // FIX: Use v8 namespaced firestore API
-    const currentClockInRef = firestore.collection(`users/${userId}/currentClockIn`).doc('entry');
-    await currentClockInRef.delete();
+    const currentClockInRef = doc(firestore, `users/${userId}/currentClockIn`, 'entry');
+    await deleteDoc(currentClockInRef);
     
     return { id: docRef.id, ...finalEntryData };
   },
@@ -82,95 +93,89 @@ export const timeService = {
     };
 
     // Add it to the main timesheet collection
-    // FIX: Use v8 namespaced firestore API
-    const docRef = await timeEntriesCollection.add(completedEntryData);
+    const docRef = await addDoc(timeEntriesCollection, completedEntryData);
 
     // Start a new clock-in segment immediately
     const newCurrentEntry: Omit<TimeEntry, 'id'> = {
       userId,
       clockInTime: clockOutTime, // New segment starts where the last one ended
     };
-    // FIX: Use v8 namespaced firestore API
-    const currentClockInRef = firestore.collection(`users/${userId}/currentClockIn`).doc('entry');
-    await currentClockInRef.set(newCurrentEntry);
+    const currentClockInRef = doc(firestore, `users/${userId}/currentClockIn`, 'entry');
+    await setDoc(currentClockInRef, newCurrentEntry);
 
     return { id: docRef.id, ...completedEntryData };
   },
 
   getCurrentClockInEntry: async (userId: string): Promise<Omit<TimeEntry, 'id'> | null> => {
-    // FIX: Use v8 namespaced firestore API
-    const currentClockInRef = firestore.collection(`users/${userId}/currentClockIn`).doc('entry');
-    const docSnap = await currentClockInRef.get();
-    if (docSnap.exists) {
+    const currentClockInRef = doc(firestore, `users/${userId}/currentClockIn`, 'entry');
+    const docSnap = await getDoc(currentClockInRef);
+    if (docSnap.exists()) {
         const data = docSnap.data()!;
         return {
             ...data,
-            // FIX: Reference v8 Timestamp type
-            clockInTime: (data.clockInTime as firebase.firestore.Timestamp).toDate(),
+            clockInTime: (data.clockInTime as Timestamp).toDate(),
         } as Omit<TimeEntry, 'id'>;
     }
     return null;
   },
 
   getTimesheetEntries: async (userId: string, startDate?: Date, endDate?: Date): Promise<TimeEntry[]> => {
-    // FIX: Use v8 namespaced firestore API for querying
-    let query: firebase.firestore.Query = timeEntriesCollection.where('userId', '==', userId);
+    const queryConstraints: QueryConstraint[] = [where('userId', '==', userId)];
 
     if (startDate) {
-        query = query.where('clockInTime', '>=', startDate);
+        queryConstraints.push(where('clockInTime', '>=', startDate));
     }
     if (endDate) {
         const endOfDay = new Date(endDate);
         endOfDay.setHours(23, 59, 59, 999);
-        query = query.where('clockInTime', '<=', endOfDay);
+        queryConstraints.push(where('clockInTime', '<=', endOfDay));
     }
 
-    const querySnapshot = await query.orderBy('clockInTime', 'desc').get();
+    const q = query(timeEntriesCollection, ...queryConstraints, orderBy('clockInTime', 'desc'));
+    const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(mapEntry);
   },
 
   updateTimesheetEntry: async (userId: string, entryId: string, updates: Partial<Pick<TimeEntry, 'clockInTime' | 'clockOutTime' | 'notes' | 'jobId' | 'siteId'>>): Promise<TimeEntry> => {
-    // FIX: Use v8 namespaced firestore API
-    const docRef = timeEntriesCollection.doc(entryId);
+    const docRef = doc(firestore, 'timeEntries', entryId);
     
     // Ensure we are not trying to update a non-existent entry that belongs to the user
-    const entrySnap = await docRef.get();
-    if (!entrySnap.exists || entrySnap.data()!.userId !== userId) {
+    const entrySnap = await getDoc(docRef);
+    if (!entrySnap.exists() || entrySnap.data()!.userId !== userId) {
         throw new Error("Time entry not found or permission denied.");
     }
 
-    await docRef.update(updates);
-    const updatedSnap = await docRef.get();
+    await updateDoc(docRef, updates);
+    const updatedSnap = await getDoc(docRef);
     return mapEntry(updatedSnap);
   },
 
   deleteTimesheetEntry: async (userId: string, entryId: string): Promise<void> => {
-    // FIX: Use v8 namespaced firestore API
-    const docRef = timeEntriesCollection.doc(entryId);
-    const entrySnap = await docRef.get();
-     if (!entrySnap.exists || entrySnap.data()!.userId !== userId) {
+    const docRef = doc(firestore, 'timeEntries', entryId);
+    const entrySnap = await getDoc(docRef);
+     if (!entrySnap.exists() || entrySnap.data()!.userId !== userId) {
         throw new Error("Time entry not found or permission denied.");
     }
-    await docRef.delete();
+    await deleteDoc(docRef);
   },
 
   getAllTimesheetEntriesForAdmin: async (startDate?: Date, endDate?: Date, filterUserIds?: string[]): Promise<TimeEntry[]> => {
-    // FIX: Use v8 namespaced firestore API for querying
-    let query: firebase.firestore.Query = timeEntriesCollection;
+    const queryConstraints: QueryConstraint[] = [];
     
     if (startDate) {
-        query = query.where('clockInTime', '>=', startDate);
+        queryConstraints.push(where('clockInTime', '>=', startDate));
     }
     if (endDate) {
         const endOfDay = new Date(endDate);
         endOfDay.setHours(23, 59, 59, 999);
-        query = query.where('clockInTime', '<=', endOfDay);
+        queryConstraints.push(where('clockInTime', '<=', endOfDay));
     }
      if (filterUserIds && filterUserIds.length > 0) {
-        query = query.where('userId', 'in', filterUserIds);
+        queryConstraints.push(where('userId', 'in', filterUserIds));
     }
     
-    const querySnapshot = await query.orderBy('clockInTime', 'desc').get();
+    const q = query(timeEntriesCollection, ...queryConstraints, orderBy('clockInTime', 'desc'));
+    const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(mapEntry);
   }
 };

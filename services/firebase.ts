@@ -1,6 +1,7 @@
-import firebase from 'firebase/app';
-import 'firebase/auth';
-import 'firebase/firestore';
+import { initializeApp } from 'firebase/app';
+// FIX: Changed import path to `firebase/auth/browser` to resolve module export error for `getAuth`.
+import { getAuth } from 'firebase/auth/browser';
+import { getFirestore } from 'firebase/firestore';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -13,11 +14,8 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-// FIX: Use v8 initialization pattern, checking for existing apps to prevent errors during hot-reloading.
-const app: firebase.app.App = !firebase.apps.length ? firebase.initializeApp(firebaseConfig) : firebase.app();
+const app = initializeApp(firebaseConfig);
 
-// Export Firebase services using the v8 namespaced pattern
-export const auth = firebase.auth();
-export const firestore = firebase.firestore();
-
-export default app;
+// Export Firebase services
+export const auth = getAuth(app);
+export const firestore = getFirestore(app);
