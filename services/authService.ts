@@ -1,12 +1,12 @@
 import { User } from '../types';
 import { auth, firestore } from './firebase';
-// FIX: Changed import path from 'firebase/auth' to '@firebase/auth' to fix module resolution errors.
+// FIX: The 'firebase/auth' module is not resolving correctly in this environment. Using the explicit browser entry point.
 import { 
   signInWithEmailAndPassword, 
   signOut, 
   onAuthStateChanged,
   User as FirebaseUser
-} from '@firebase/auth';
+} from 'firebase/auth-browser';
 import { doc, getDoc } from 'firebase/firestore';
 
 export const authService = {

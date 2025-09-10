@@ -1,7 +1,7 @@
 // services/firebase.ts
 import { initializeApp } from 'firebase/app';
-// FIX: Changed import path from 'firebase/auth' to '@firebase/auth' to fix module resolution errors.
-import { getAuth } from '@firebase/auth';
+// FIX: The 'firebase/auth' module is not resolving correctly in this environment. Using the explicit browser entry point.
+import { getAuth } from 'firebase/auth-browser';
 import { getFirestore } from 'firebase/firestore';
 
 // Your web app's Firebase configuration
