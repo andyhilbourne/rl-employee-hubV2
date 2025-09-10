@@ -1,13 +1,10 @@
-// FIX: Import Firebase v9 modular functions instead of relying on a global window object.
 import { initializeApp } from 'firebase/app';
-// FIX: Import getAuth directly from 'firebase/auth'.
-import { getAuth } from 'firebase/auth';
+// Fix: Import firebase/auth as a namespace to avoid potential module resolution issues.
+import * as firebaseAuth from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
-// IMPORTANT: Replace this with your actual Firebase project configuration
-// You can find this in your Firebase project console:
-// Project settings > General > Your apps > Firebase SDK snippet > Config
-
+// Your web app's Firebase configuration
+// This is restored from your previous input to fix the API key error.
 const firebaseConfig = {
   apiKey: "AIzaSyD-6Y5V_c6ePDe-nqjiMPi-PlSnVMGEBgo",
   authDomain: "rl-employee-hub-v2.firebaseapp.com",
@@ -17,11 +14,12 @@ const firebaseConfig = {
   appId: "1:386245536917:web:ad4a354c95ee8e6d063f9c"
 };
 
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
 // Export Firebase services
-// FIX: Use getAuth directly.
-export const auth = getAuth(app);
+// Fix: Use the namespace to access getAuth.
+export const auth = firebaseAuth.getAuth(app);
 export const firestore = getFirestore(app);
 export default app;

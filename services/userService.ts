@@ -12,11 +12,8 @@ import {
   deleteDoc,
   arrayUnion,
 } from 'firebase/firestore';
-// FIX: Import v9 auth functions directly instead of using a namespace.
-import {
-  createUserWithEmailAndPassword,
-  sendPasswordResetEmail,
-} from 'firebase/auth';
+// Fix: Import firebase/auth as a namespace to avoid potential module resolution issues.
+import * as firebaseAuth from 'firebase/auth';
 
 const usersCollection = collection(firestore, 'users');
 const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbya5gmaGfXD3Iy-ChHE9Ev67WuE8CAZROoCf6VhAuTn49RQMDZ2X3yANkvhRrC8YMjq/exec';
@@ -40,8 +37,8 @@ export const userService = {
 
   createUser: async (userData: Omit<User, 'id'>, password: string): Promise<User> => {
       // Step 1: Create user in Firebase Authentication
-      // FIX: Use imported v9 function directly.
-      const userCredential = await createUserWithEmailAndPassword(auth, userData.email, password);
+      // Fix: Use the namespace to access createUserWithEmailAndPassword.
+      const userCredential = await firebaseAuth.createUserWithEmailAndPassword(auth, userData.email, password);
       const firebaseUser = userCredential.user;
 
       // Step 2: Create user profile in Firestore
@@ -67,8 +64,8 @@ export const userService = {
   },
 
   sendPasswordResetEmail: async (email: string): Promise<void> => {
-    // FIX: Use imported v9 function directly.
-    await sendPasswordResetEmail(auth, email);
+    // Fix: Use the namespace to access sendPasswordResetEmail.
+    await firebaseAuth.sendPasswordResetEmail(auth, email);
   },
 
   toggleUserStatus: async (userId: string, isDisabled: boolean): Promise<void> => {
