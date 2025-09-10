@@ -1,0 +1,21 @@
+{
+  "name": "rl-employee-hub",
+  "version": "1.0.0",
+  "description": "R&L Employee Hub Application",
+  "private": true,
+  "scripts": {
+    "build": "npm run clean && npm run copy-files && npm run build:ts",
+    "clean": "rimraf dist",
+    "copy-files": "copyfiles index.html dist && copyfiles -u 1 \"assets/**/*\" dist",
+    "build:ts": "esbuild index.tsx --bundle --outfile=dist/bundle.js --jsx=automatic"
+  },
+  "dependencies": {
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "copyfiles": "^2.4.1",
+    "esbuild": "^0.23.0",
+    "rimraf": "^5.0.7"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "R&L - Employee Hub V2",
+  "description": "A mobile-first web application for R&L company employees to clock in/out, view daily jobs, and manage timesheets.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}
