@@ -12,8 +12,8 @@ import {
   deleteDoc,
   arrayUnion,
 } from 'firebase/firestore';
-// Fix: Import firebase/auth as a namespace to avoid potential module resolution issues.
-import * as firebaseAuth from 'firebase/auth';
+// FIX: Removed modular imports from 'firebase/auth' as they are not available in the compat setup.
+// The functions will be called as methods on the 'auth' object.
 
 const usersCollection = collection(firestore, 'users');
 const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbya5gmaGfXD3Iy-ChHE9Ev67WuE8CAZROoCf6VhAuTn49RQMDZ2X3yANkvhRrC8YMjq/exec';
@@ -37,8 +37,8 @@ export const userService = {
 
   createUser: async (userData: Omit<User, 'id'>, password: string): Promise<User> => {
       // Step 1: Create user in Firebase Authentication
-      // Fix: Use the namespace to access createUserWithEmailAndPassword.
-      const userCredential = await firebaseAuth.createUserWithEmailAndPassword(auth, userData.email, password);
+      // FIX: Use compat method on auth object.
+      const userCredential = await auth.createUserWithEmailAndPassword(userData.email, password);
       const firebaseUser = userCredential.user;
 
       // Step 2: Create user profile in Firestore
@@ -64,8 +64,8 @@ export const userService = {
   },
 
   sendPasswordResetEmail: async (email: string): Promise<void> => {
-    // Fix: Use the namespace to access sendPasswordResetEmail.
-    await firebaseAuth.sendPasswordResetEmail(auth, email);
+    // FIX: Use compat method on auth object.
+    await auth.sendPasswordResetEmail(email);
   },
 
   toggleUserStatus: async (userId: string, isDisabled: boolean): Promise<void> => {

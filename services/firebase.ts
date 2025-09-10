@@ -1,6 +1,6 @@
-import { initializeApp } from 'firebase/app';
-// Fix: Import firebase/auth as a namespace to avoid potential module resolution issues.
-import * as firebaseAuth from 'firebase/auth';
+// FIX: Use Firebase v9 compat imports for Authentication.
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
 import { getFirestore } from 'firebase/firestore';
 
 // Your web app's Firebase configuration
@@ -16,10 +16,10 @@ const firebaseConfig = {
 
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+const app = firebase.initializeApp(firebaseConfig);
 
 // Export Firebase services
-// Fix: Use the namespace to access getAuth.
-export const auth = firebaseAuth.getAuth(app);
+// FIX: Use the compat syntax for getting the auth instance.
+export const auth = firebase.auth();
 export const firestore = getFirestore(app);
 export default app;
