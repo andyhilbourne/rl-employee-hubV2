@@ -1,21 +1,24 @@
+// services/firebase.ts
 import { initializeApp } from 'firebase/app';
-// FIX: Changed import path to `firebase/auth/browser` to resolve module export error for `getAuth`.
-import { getAuth } from 'firebase/auth/browser';
+// FIX: The modular auth imports are failing. Using the compat library for auth as a workaround.
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
 import { getFirestore } from 'firebase/firestore';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyD-6Y5V_c6ePDe-nqjiMPi-PlSnVMGEBgo",
-  authDomain: "rl-employee-hub-v2.firebaseapp.com",
-  projectId: "rl-employee-hub-v2",
-  storageBucket: "rl-employee-hub-v2.appspot.com",
-  messagingSenderId: "386245536917",
-  appId: "1:386245536917:web:ad4a354c95ee8e6d063f9c"
+  apiKey: "AIzaSyDmvNlUJsBOV98elLXhhPQ6BI5CXDNEZuU",
+  authDomain: "rl-employee-hub-v3.firebaseapp.com",
+  projectId: "rl-employee-hub-v3",
+  storageBucket: "rl-employee-hub-v3.firebasestorage.app",
+  messagingSenderId: "940633526053",
+  appId: "1:940633526053:web:ce9edfc0116d6681bf94cc"
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig); // for modular services
+firebase.initializeApp(firebaseConfig); // for compat services
 
 // Export Firebase services
-export const auth = getAuth(app);
+export const auth = firebase.auth();
 export const firestore = getFirestore(app);

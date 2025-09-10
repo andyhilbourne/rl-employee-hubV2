@@ -1,7 +1,6 @@
 import { User } from '../types';
 import { auth, firestore } from './firebase';
-// FIX: Changed import path to `firebase/auth/browser` to resolve module export errors.
-import { createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth/browser';
+// FIX: Using Firebase compat auth, so modular auth imports are removed.
 import { collection, getDocs, doc, getDoc, setDoc, updateDoc, arrayUnion } from 'firebase/firestore';
 
 const usersCollectionRef = collection(firestore, 'users');
@@ -24,7 +23,8 @@ export const userService = {
   },
 
   createUser: async (userData: Omit<User, 'id'>, password: string): Promise<User> => {
-      const userCredential = await createUserWithEmailAndPassword(auth, userData.email, password);
+      // FIX: Use compat auth API
+      const userCredential = await auth.createUserWithEmailAndPassword(userData.email, password);
       const firebaseUser = userCredential.user;
 
       if (!firebaseUser) {
@@ -53,7 +53,8 @@ export const userService = {
   },
 
   sendPasswordResetEmail: async (email: string): Promise<void> => {
-    await sendPasswordResetEmail(auth, email);
+    // FIX: Use compat auth API
+    await auth.sendPasswordResetEmail(email);
   },
 
   toggleUserStatus: async (userId: string, isDisabled: boolean): Promise<void> => {
