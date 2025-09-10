@@ -12,7 +12,7 @@ import {
   deleteDoc,
   arrayUnion,
 } from 'firebase/firestore';
-// FIX: Module '"firebase/auth"' has no exported member 'createUserWithEmailAndPassword', 'sendPasswordResetEmail'. Switched to v8 compat syntax.
+// FIX: Removed failing import from 'firebase/auth' as auth is now using the compat library.
 // import { createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 
 const usersCollection = collection(firestore, 'users');
@@ -37,7 +37,7 @@ export const userService = {
 
   createUser: async (userData: Omit<User, 'id'>, password: string): Promise<User> => {
       // Step 1: Create user in Firebase Authentication
-      // FIX: Use v8 compat syntax for createUserWithEmailAndPassword.
+      // FIX: Changed to v8 compat syntax: auth.createUserWithEmailAndPassword
       const userCredential = await auth.createUserWithEmailAndPassword(userData.email, password);
       const firebaseUser = userCredential.user;
 
@@ -64,7 +64,7 @@ export const userService = {
   },
 
   sendPasswordResetEmail: async (email: string): Promise<void> => {
-    // FIX: Use v8 compat syntax for sendPasswordResetEmail.
+    // FIX: Changed to v8 compat syntax: auth.sendPasswordResetEmail
     await auth.sendPasswordResetEmail(email);
   },
 

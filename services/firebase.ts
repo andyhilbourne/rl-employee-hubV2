@@ -1,7 +1,8 @@
-// FIX: Module '"firebase/auth"' has no exported member 'getAuth'. Switched to Firebase v8 compatibility layer for authentication.
+// FIX: Fix firebase auth imports by using the compat library, as the project is set up to use v9 modular for firestore but seems to be using compat for auth.
+import { initializeApp, FirebaseApp } from 'firebase/app';
+import { getFirestore, Firestore } from 'firebase/firestore';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
-import { getFirestore } from 'firebase/firestore';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -15,9 +16,11 @@ const firebaseConfig = {
 
 
 // Initialize Firebase
-const app = firebase.initializeApp(firebaseConfig);
+const app: FirebaseApp = initializeApp(firebaseConfig);
+// Also initialize the compat app
+firebase.initializeApp(firebaseConfig);
 
 // Export Firebase services
 export const auth = firebase.auth();
-export const firestore = getFirestore(app);
+export const firestore: Firestore = getFirestore(app);
 export default app;
