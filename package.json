@@ -6,7 +6,7 @@
   "scripts": {
     "build": "npm run clean && npm run copy-files && npm run build:ts",
     "clean": "rimraf dist",
-    "copy-files": "copyfiles index.html dist && copyfiles -u 1 \"assets/**/*\" dist",
+    "copy-files": "copyfiles index.html dist && copyfiles -u 1 \"assets/**/*\" dist && copyfiles _redirects dist",
     "build:ts": "esbuild index.tsx --bundle --outfile=dist/bundle.js --jsx=automatic --external:firebase/*"
   },
   "dependencies": {

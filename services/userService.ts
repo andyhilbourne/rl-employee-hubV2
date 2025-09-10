@@ -12,8 +12,8 @@ import {
   deleteDoc,
   arrayUnion,
 } from 'firebase/firestore';
-// FIX: Removed modular imports from 'firebase/auth' as they are not available in the compat setup.
-// The functions will be called as methods on the 'auth' object.
+// FIX: Module '"firebase/auth"' has no exported member 'createUserWithEmailAndPassword', 'sendPasswordResetEmail'. Switched to v8 compat syntax.
+// import { createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 
 const usersCollection = collection(firestore, 'users');
 const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbya5gmaGfXD3Iy-ChHE9Ev67WuE8CAZROoCf6VhAuTn49RQMDZ2X3yANkvhRrC8YMjq/exec';
@@ -37,7 +37,7 @@ export const userService = {
 
   createUser: async (userData: Omit<User, 'id'>, password: string): Promise<User> => {
       // Step 1: Create user in Firebase Authentication
-      // FIX: Use compat method on auth object.
+      // FIX: Use v8 compat syntax for createUserWithEmailAndPassword.
       const userCredential = await auth.createUserWithEmailAndPassword(userData.email, password);
       const firebaseUser = userCredential.user;
 
@@ -64,7 +64,7 @@ export const userService = {
   },
 
   sendPasswordResetEmail: async (email: string): Promise<void> => {
-    // FIX: Use compat method on auth object.
+    // FIX: Use v8 compat syntax for sendPasswordResetEmail.
     await auth.sendPasswordResetEmail(email);
   },
 

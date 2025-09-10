@@ -1,12 +1,12 @@
 import { User } from '../types';
 import { auth, firestore } from './firebase';
 import { doc, getDoc } from "firebase/firestore";
-// FIX: Removed modular imports from 'firebase/auth' as they are not available in the compat setup.
-// The functions will be called as methods on the 'auth' object.
+// FIX: Module '"firebase/auth"' has no exported member 'signInWithEmailAndPassword', 'signOut', 'onAuthStateChanged'. Switched to v8 compat syntax.
+// import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
 
 export const authService = {
   login: async (email: string, passwordInput: string): Promise<User> => {
-    // FIX: Use compat method on auth object.
+    // FIX: Use v8 compat syntax for signInWithEmailAndPassword.
     const userCredential = await auth.signInWithEmailAndPassword(email, passwordInput);
     const firebaseUser = userCredential.user;
 
@@ -18,14 +18,14 @@ export const authService = {
       if (userDoc.exists()) {
         const userData = userDoc.data() as Omit<User, 'id'>;
         if (userData.disabled) {
-          // FIX: Use compat method on auth object.
+          // FIX: Use v8 compat syntax for signOut.
           await auth.signOut();
           throw new Error("Your account has been disabled. Please contact an administrator.");
         }
         return { id: firebaseUser.uid, ...userData } as User;
       } else {
         // This case should ideally not happen if user creation is handled correctly
-        // FIX: Use compat method on auth object.
+        // FIX: Use v8 compat syntax for signOut.
         await auth.signOut();
         throw new Error("User profile not found.");
       }
@@ -34,12 +34,12 @@ export const authService = {
   },
 
   logout: async (): Promise<void> => {
-    // FIX: Use compat method on auth object.
+    // FIX: Use v8 compat syntax for signOut.
     await auth.signOut();
   },
 
   onAuthStateChange: (callback: (user: User | null) => void) => {
-    // FIX: Use compat method on auth object.
+    // FIX: Use v8 compat syntax for onAuthStateChanged.
     return auth.onAuthStateChanged(async (firebaseUser) => {
       if (firebaseUser) {
         const userDocRef = doc(firestore, "users", firebaseUser.uid);
@@ -47,7 +47,7 @@ export const authService = {
         if (userDoc.exists()) {
             const userData = userDoc.data() as Omit<User, 'id'>;
             if (userData.disabled) {
-                // FIX: Use compat method on auth object.
+                // FIX: Use v8 compat syntax for signOut.
                 await auth.signOut();
                 callback(null);
             } else {
@@ -55,7 +55,7 @@ export const authService = {
             }
         } else {
           // User exists in Auth but not Firestore, log them out.
-          // FIX: Use compat method on auth object.
+          // FIX: Use v8 compat syntax for signOut.
           await auth.signOut();
           callback(null);
         }

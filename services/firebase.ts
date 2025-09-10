@@ -1,10 +1,9 @@
-// FIX: Use Firebase v9 compat imports for Authentication.
+// FIX: Module '"firebase/auth"' has no exported member 'getAuth'. Switched to Firebase v8 compatibility layer for authentication.
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import { getFirestore } from 'firebase/firestore';
 
 // Your web app's Firebase configuration
-// This is restored from your previous input to fix the API key error.
 const firebaseConfig = {
   apiKey: "AIzaSyD-6Y5V_c6ePDe-nqjiMPi-PlSnVMGEBgo",
   authDomain: "rl-employee-hub-v2.firebaseapp.com",
@@ -19,7 +18,6 @@ const firebaseConfig = {
 const app = firebase.initializeApp(firebaseConfig);
 
 // Export Firebase services
-// FIX: Use the compat syntax for getting the auth instance.
 export const auth = firebase.auth();
 export const firestore = getFirestore(app);
 export default app;

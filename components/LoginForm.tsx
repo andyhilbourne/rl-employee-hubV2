@@ -35,7 +35,6 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
     <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center p-4">
       <div className="max-w-md w-full mx-auto bg-white shadow-xl rounded-2xl p-8">
         <div className="text-center mb-8">
-            <img src="logo.png" alt="R&L Company Logo" className="mx-auto h-16 w-auto" />
             <h1 className="text-3xl font-bold text-gray-800 mt-4">R&L Employee Hub</h1>
             <p className="text-gray-500 mt-1">Please sign in to continue</p>
         </div>
