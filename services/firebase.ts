@@ -1,8 +1,7 @@
-// services/firebase.ts
-// FIX: Switched to Firebase compat library for auth to resolve import errors.
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/auth';
-import { getFirestore } from 'firebase/firestore';
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -15,9 +14,8 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = firebase.initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
 
 // Export Firebase services
-// FIX: Use compat auth instance. Firestore remains modular.
-export const auth = firebase.auth();
+export const auth = getAuth(app);
 export const firestore = getFirestore(app);

@@ -34,15 +34,6 @@ export interface JobWithSiteInfo extends Job {
 }
 
 
-export interface SubTask {
-  id: string;
-  jobId: string; // ID of the parent Job (the new refactored Job)
-  title: string;
-  description?: string;
-  assignedUserId: string; // ID of the User assigned to this specific sub-task (could be same as parent Job's user or different if sub-delegated)
-  status: 'Pending' | 'In Progress' | 'Completed';
-}
-
 export interface TimeEntry {
   id: string;
   userId: string;

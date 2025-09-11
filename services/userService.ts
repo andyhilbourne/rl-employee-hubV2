@@ -1,12 +1,9 @@
 import { User } from '../types';
 import { auth, firestore } from './firebase';
-// FIX: Removed imports from 'firebase/auth' as they were causing errors. Switched to compat API.
-/*
 import {
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
 } from 'firebase/auth';
-*/
 import { 
   collection, 
   getDocs, 
@@ -37,8 +34,7 @@ export const userService = {
   },
 
   createUser: async (userData: Omit<User, 'id'>, password: string): Promise<User> => {
-      // FIX: Switched to compat API `auth.createUserWithEmailAndPassword`
-      const userCredential = await auth.createUserWithEmailAndPassword(userData.email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, userData.email, password);
       const firebaseUser = userCredential.user;
 
       if (!firebaseUser) {
@@ -67,8 +63,7 @@ export const userService = {
   },
 
   sendPasswordResetEmail: async (email: string): Promise<void> => {
-    // FIX: Switched to compat API `auth.sendPasswordResetEmail`
-    await auth.sendPasswordResetEmail(email);
+    await sendPasswordResetEmail(auth, email);
   },
 
   toggleUserStatus: async (userId: string, isDisabled: boolean): Promise<void> => {
