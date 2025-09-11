@@ -10,8 +10,8 @@
     "build:ts": "esbuild index.tsx --bundle --outfile=dist/bundle.js --jsx=automatic --format=esm --external:firebase/* --external:react --external:react-dom/*"
   },
   "dependencies": {
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "copyfiles": "^2.4.1",
