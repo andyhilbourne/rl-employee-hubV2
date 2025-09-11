@@ -23,11 +23,12 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true); // For initial auth check
 
   useEffect(() => {
+    // This listener is the single source of truth for auth state. It runs only once.
     const unsubscribe = authService.onAuthStateChange(user => {
       setCurrentUser(user);
+      // If user logs out, reset view to dashboard. The main render logic
+      // will see the null user and redirect to the login form.
       if (!user) {
-        setCurrentView(AppView.LOGIN);
-      } else if (currentView === AppView.LOGIN) {
         setCurrentView(AppView.DASHBOARD);
       }
       setIsLoading(false);
@@ -35,11 +36,11 @@ const App: React.FC = () => {
     
     // Cleanup subscription on unmount
     return () => unsubscribe();
-  }, [currentView]); // Depend on currentView to switch to dashboard after login
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   const handleLoginSuccess = (user: User) => {
-    // This is now handled by onAuthStateChange,
-    // but we can still use it to force a view change if needed.
+    // The onAuthStateChange listener is the ultimate source of truth,
+    // but we can set state here to make the UI transition faster.
     setCurrentUser(user);
     setCurrentView(AppView.DASHBOARD);
   };
